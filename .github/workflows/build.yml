@@ -19,18 +19,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-     - name: Configurer le SDK Android
+      - name: Configurer le SDK Android
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
 
-      - name: Installer NDK et CMake
-        run: sdkmanager "ndk;26.1.10909125" "cmake;3.22.1"
+      - name: Accepter les licences et installer NDK + CMake
+        run: |
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "ndk;26.1.10909125" "cmake;3.22.1"
 
       - name: Installer Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.4'
+          add-gradle-to-path: true
 
       - name: Générer l'APK Debug
         run: gradle assembleDebug
@@ -38,6 +41,6 @@ jobs:
       - name: Publier l'APK prêt à télécharger
         uses: actions/upload-artifact@v4
         with:
-       -   name: BPM-DSK-Studio-APK
+          name: BPM-DSK-Studio-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           
