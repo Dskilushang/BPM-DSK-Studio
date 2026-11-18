@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      name: Configurer le SDK Android
+     - name: Configurer le SDK Android
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
@@ -38,6 +38,6 @@ jobs:
       - name: Publier l'APK prêt à télécharger
         uses: actions/upload-artifact@v4
         with:
-          name: BPM-DSK-Studio-APK
+       -   name: BPM-DSK-Studio-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           
