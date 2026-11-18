@@ -1,4 +1,4 @@
-app/build.graplugins {
+plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
@@ -45,4 +45,3 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.oboe:oboe:1.8.0")
 }
-dle.kts
