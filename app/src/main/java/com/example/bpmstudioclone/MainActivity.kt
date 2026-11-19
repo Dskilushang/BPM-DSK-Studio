@@ -1,3 +1,209 @@
+@Composable
+fun PlayerUnit(
+    modifier: Modifier,
+    playerLabel: String,
+    trackTitle: String,
+    isPlaying: Boolean,
+    position: Float,
+    elapsedSec: Double,
+    level: Float,
+    onPlayPause: () -> Unit,
+    onCue: () -> Unit,
+    onCup: () -> Unit,
+    onSeek: (Float) -> Unit,
+    onPitchChange: (Float) -> Unit,
+    onPitchEnabled: (Boolean) -> Unit,
+    onPitchBend: (Float) -> Unit,
+    onLoopIn: () -> Unit,
+    onLoopOut: () -> Unit,
+    onReloop: () -> Unit
+) {
+    var pitchPercent by remember { mutableFloatStateOf(0f) }
+    var pitchOn by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .background(PanelMetal, RoundedCornerShape(4.dp))
+            .border(1.dp, Color(0xFF3E4452), RoundedCornerShape(4.dp))
+            .padding(5.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(LcdBlueBg, RoundedCornerShape(3.dp))
+                .border(1.dp, Color(0xFF1C4E80), RoundedCornerShape(3.dp))
+                .padding(horizontal = 6.dp, vertical = 3.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = playerLabel,
+                    color = LcdCyan,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = formatTime(elapsedSec),
+                    color = LcdCyan,
+                    fontSize = 15.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = String.format(Locale.US, "%+.1f%%", pitchPercent),
+                    color = LcdRed,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Text(
+                text = trackTitle,
+                color = Color.White,
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+                    .padding(top = 2.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            val norm = (offset.x / size.width).coerceIn(0f, 1f)
+                            onSeek(norm)
+                        }
+                    }
+            ) {
+                drawRect(Color(0xFF0A2A4A), size = size)
+                val barCount = 28
+                val barW = size.width / barCount
+                for (i in 0 until barCount) {
+                    val active = (i.toFloat() / barCount) <= position
+                    val amp = if (isPlaying) (0.25f + (level * 0.75f * ((i % 4 + 1) / 4f))) else 0.2f
+                    val h = size.height * amp.coerceIn(0.15f, 1f)
+                    drawRect(
+                        color = if (active) LcdCyan else Color(0xFF1D4E7A),
+                        topLeft = Offset(i * barW + 1f, size.height - h),
+                        size = Size(barW - 2f, h)
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MiniHardwareBtn("IN", Color(0xFF333945), Modifier.weight(1f), onLoopIn)
+            MiniHardwareBtn("OUT", Color(0xFF333945), Modifier.weight(1f), onLoopOut)
+            MiniHardwareBtn("REL", BtnAmber, Modifier.weight(1f), onReloop)
+            MiniHardwareBtn("BEND-", Color(0xFF2B303A), Modifier.weight(1f)) {
+                onPitchBend(-0.04f)
+            }
+            MiniHardwareBtn("BEND+", Color(0xFF2B303A), Modifier.weight(1f)) {
+                onPitchBend(0.04f)
+            }
+            MiniHardwareBtn("0%", Color(0xFF2B303A), Modifier.weight(0.9f)) {
+                onPitchBend(0f)
+                pitchPercent = 0f
+                onPitchChange(1.0f)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(if (pitchOn) BtnAmber else Color(0xFF333945), RoundedCornerShape(3.dp))
+                    .clickable {
+                        pitchOn = !pitchOn
+                        onPitchEnabled(pitchOn)
+                    }
+                    .padding(horizontal = 6.dp, vertical = 3.dp)
+            ) {
+                Text("PITCH", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            }
+            Slider(
+                value = pitchPercent,
+                onValueChange = {
+                    pitchPercent = it
+                    onPitchChange(1.0f + (it / 100f))
+                },
+                valueRange = -12f..12f,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(20.dp),
+                colors = SliderDefaults.colors(
+                    thumbColor = Color.White,
+                    activeTrackColor = LcdCyan,
+                    inactiveTrackColor = Color(0xFF111317)
+                )
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(38.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            TransportButton(
+                label = "CUP",
+                bgColor = Color(0xFF353B48),
+                modifier = Modifier.weight(0.8f),
+                onClick = onCup
+            )
+            TransportButton(
+                label = "CUE",
+                bgColor = BtnRed,
+                modifier = Modifier.weight(1f),
+                onClick = onCue
+            )
+            TransportButton(
+                label = if (isPlaying) "PAUSE" else "PLAY",
+                bgColor = BtnGreen,
+                modifier = Modifier.weight(1.2f),
+                onClick = onPlayPause
+            )
+        }
+    }
+}
+
+@Composable
+fun TransportButton(
+    label: String,
+    bgColor: Color,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .background(bgColor, RoundedCornerShape(4.dp))
+            .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
+
 fun CenterFadeModule(
     modifier: Modifier,
     crossfader: Float,
