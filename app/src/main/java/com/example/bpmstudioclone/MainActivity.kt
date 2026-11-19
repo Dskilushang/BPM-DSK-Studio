@@ -205,7 +205,7 @@ fun TransportButton(
         )
     }
 }
-
+@Composable
 fun CenterFadeModule(
     modifier: Modifier,
     crossfader: Float,
