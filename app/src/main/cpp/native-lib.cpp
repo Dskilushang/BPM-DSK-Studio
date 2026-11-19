@@ -6,6 +6,11 @@
 #include <cmath>
 #include <algorithm>
 
+template <typename T>
+T clampVal(T val, T minVal, T maxVal) {
+    return std::max(minVal, std::min(val, maxVal));
+}
+
 struct ThreeBandEQ {
     float lowGain = 1.0f;
     float midGain = 1.0f;
@@ -74,9 +79,9 @@ struct Deck {
 
     void seekNormalized(float normPos) {
         std::lock_guard<std::mutex> lock(dataMutex);
-        if (pcmData.empty()) return;
-        size_t totalFrames = pcmData.size() / 2;
-        playhead = std::clamp(static_cast<double>(normPos) * totalFrames, 0.0, static_cast<double>(totalFrames - 2));
+        if (pcmData.size() < 4) return;
+        double maxFrame = static_cast<double>((pcmData.size() / 2) - 2);
+        playhead = clampVal(static_cast<double>(normPos) * maxFrame, 0.0, maxFrame);
         if (!isPlaying.load()) {
             cuePoint = playhead;
         }
@@ -88,13 +93,8 @@ struct Deck {
         return static_cast<float>(playhead / static_cast<double>(totalFrames));
     }
 
-    double getElapsedSeconds() {
-        return playhead / 44100.0;
-    }
-
-    double getTotalSeconds() {
-        return (pcmData.size() / 2) / 44100.0;
-    }
+    double getElapsedSeconds() { return playhead / 44100.0; }
+    double getTotalSeconds() { return (pcmData.size() / 2) / 44100.0; }
 
     void setLoopIn() {
         loopIn = playhead;
@@ -231,8 +231,8 @@ public:
             deckA.getNextStereoSample(lA, rA);
             deckB.getNextStereoSample(lB, rB);
 
-            out[i * 2]     = std::clamp(((lA * gainA) + (lB * gainB)) * master, -1.0f, 1.0f);
-            out[i * 2 + 1] = std::clamp(((rA * gainA) + (rB * gainB)) * master, -1.0f, 1.0f);
+            out[i * 2]     = clampVal(((lA * gainA) + (lB * gainB)) * master, -1.0f, 1.0f);
+            out[i * 2 + 1] = clampVal(((rA * gainA) + (rB * gainB)) * master, -1.0f, 1.0f);
         }
         return oboe::DataCallbackResult::Continue;
     }
