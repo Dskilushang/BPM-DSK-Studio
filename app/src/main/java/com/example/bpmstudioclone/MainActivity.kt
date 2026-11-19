@@ -627,72 +627,7 @@ private fun formatTime(seconds: Double): String {
     return String.format(Locale.US, "%02d:%02d.%02d", mins, secs, hundredths)
 }
 
-fun CenterFadeModule(
-    modifier: Modifier,
-    crossfader: Float,
-    fadeTime: Float,
-    onCrossfaderChange: (Float) -> Unit,
-    onFadeTimeChange: (Float) -> Unit,
-    onAutoFade: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .background(PanelMetal, RoundedCornerShape(4.dp))
-            .border(1.dp, Color(0xFF3E4452), RoundedCornerShape(4.dp))
-            .padding(5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text("CROSS FADE", color = Color.LightGray, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LcdBlueBg, RoundedCornerShape(3.dp))
-                .border(1.dp, Color(0xFF1C4E80), RoundedCornerShape(3.dp))
-                .padding(vertical = 4.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = String.format(Locale.US, "%.1f s", fadeTime),
-                color = LcdCyan,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("FADE TIME", color = Color.Gray, fontSize = 8.sp)
-            Slider(
-                value = fadeTime,
-                onValueChange = onFadeTimeChange,
-                valueRange = 1f..15f,
-                modifier = Modifier.height(20.dp),
-                colors = SliderDefaults.colors(thumbColor = LcdCyan, activeTrackColor = LcdCyan)
-            )
-        }
-        Button(
-            onClick = onAutoFade,
-            colors = ButtonDefaults.buttonColors(containerColor = BtnAmber),
-            contentPadding = PaddingValues(0.dp),
-            shape = RoundedCornerShape(3.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-        ) {
-            Text("AUTO FADE", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("MANUAL FADE", color = Color.Gray, fontSize = 8.sp)
-            Slider(
-                value = crossfader,
-                onValueChange = onCrossfaderChange,
-                valueRange = 0f..1f,
-                modifier = Modifier.height(22.dp),
-                colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = BtnAmber)
-            )
-        }
-    }
-}
+
 
 @Composable
 fun PlaylistPanel(
