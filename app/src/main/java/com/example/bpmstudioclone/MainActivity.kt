@@ -1,3 +1,5 @@
+import androidx.compose.ui.text.font.FontWeight
+import java.util.Locale
 @Composable
 fun PlayerUnit(
     modifier: Modifier,
